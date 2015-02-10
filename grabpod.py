@@ -10,7 +10,8 @@ import urlparse
 import requests
 # Not using urlgrabber because it doesn't handle 302's well
 
-config_filename = 'grabpodrc.yaml'
+config_dir = os.path.join(os.path.expanduser("~"), ".config")
+config_filename = os.path.join(config_dir, "grabpodrc.yaml")
 
 with open(config_filename) as config_file:
   config = yaml.load(config_file)
