@@ -12,6 +12,22 @@ import requests
 
 config_dir = os.path.join(os.path.expanduser("~"), ".config")
 config_filename = os.path.join(config_dir, "grabpodrc.yaml")
+cur_dir = os.getcwd()
+
+if not os.path.exists(config_filename):
+  print("{} doesn't exist so creating and populating with an example".format(config_filename))
+  if not os.path.exists(config_dir):
+    os.makedirs(config_dir)
+  with open(config_filename, 'w') as config_file:
+    config_file.write("""podcasts directory: {}
+
+podcasts:
+  - alias: day6
+    url: http://www.cbc.ca/podcasting/includes/day6.xml
+    num downloads: 2
+  - alias: hdtgm
+    url: http://rss.earwolf.com/how-did-this-get-made
+    num downloads: 2""".format(cur_dir))
 
 with open(config_filename) as config_file:
   config = yaml.load(config_file)
