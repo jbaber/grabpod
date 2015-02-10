@@ -31,10 +31,7 @@ podcasts:
 
 with open(config_filename) as config_file:
   config = yaml.load(config_file)
-  if 'podcasts directory' in config:
-    podcasts_dir = config['podcasts directory']
-  else:
-    podcasts_dir = "/media/sansa_clip_plus/PODCASTS"
+  podcasts_dir = config['podcasts directory']
   podcasts = config['podcasts']
       
 for podcast in podcasts:
