@@ -4,14 +4,15 @@
 
 Usage:
   grabpod.py
-  grabpod.py [options...] [<podcast_name>...]
+  grabpod.py [--dir=<dir>] [--podcasts <podcast_name>...]
   grabpod.py -h | --help
   grabpod.py --version
 
 Options:
-  -h, --help    Show this screen.
-  --version     Show version.
-  --dir <dir>   Download files to subdirectories of <dir>
+  -h, --help                        Show this screen.
+  --version                         Show version.
+  -d, --dir=<dir>                   Download files to subdirectories of <dir>
+  -p, --podcasts <podcast_name>...  Only download these podcasts
 """
 
 from __future__ import print_function
@@ -34,14 +35,14 @@ def main(args):
   config_dir = os.path.join(os.path.expanduser("~"), ".config")
   config_filename = os.path.join(config_dir, "grabpodrc.yaml")
   cur_dir = os.getcwd()
-  
+
   if not os.path.exists(config_filename):
     print("{} doesn't exist so creating and populating with an example".format(config_filename))
     if not os.path.exists(config_dir):
       os.makedirs(config_dir)
     with open(config_filename, 'w') as config_file:
       config_file.write("""podcasts directory: {}
-  
+
   podcasts:
     - alias: day6
       url: http://www.cbc.ca/podcasting/includes/day6.xml
@@ -49,16 +50,23 @@ def main(args):
     - alias: hdtgm
       url: http://rss.earwolf.com/how-did-this-get-made
       num downloads: 2""".format(cur_dir))
-  
+
+  # Read options from config file
   with open(config_filename) as config_file:
     config = yaml.load(config_file)
     podcasts_dir = config['podcasts directory']
     podcasts = config['podcasts']
-        
+
+  # CLI options override config file options
+  if args['--dir'] is not None:
+    podcasts_dir = args['--dir']
+  if args['--podcasts'] != []:
+    podcasts = [podcast for podcast in podcasts if podcast['alias'] in args['--podcasts']]
+
   for podcast in podcasts:
     podcast_dir = os.path.join(podcasts_dir, podcast['alias'])
     xml_filename = os.path.join(podcast_dir, 'podcast.xml')
-  
+
     if not os.path.isdir(podcast_dir):
       print("Creating {}".format(podcast_dir))
       os.makedirs(podcast_dir)
