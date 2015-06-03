@@ -7,6 +7,7 @@ Usage:
   grabpod.py [--dry-run] [--dir=<dir>] [<podcast_name> <podcast_name>...]
   grabpod.py -h | --help
   grabpod.py --version
+  grabpod.py --list
 
 Options:
   -h, --help                        Show this screen.
@@ -16,6 +17,7 @@ Options:
   -x, --dry-run                     Download podcast lists and create
                                     appropriate directories, but don't download
                                     any audio files.
+  -l, --list                        List podcast names from config file.
 """
 
 from __future__ import print_function
@@ -59,6 +61,12 @@ def main(args):
     config = yaml.load(config_file)
     podcasts_dir = config['podcasts directory']
     podcasts = config['podcasts']
+
+  # If --list flag given, only list the available aliases and quit
+  if args['--list']:
+    for alias in (podcast['alias'] for podcast in podcasts):
+      print(alias)
+    exit(0)
 
   # CLI options override config file options
   if args['--dir'] is not None:
