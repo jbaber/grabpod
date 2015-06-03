@@ -4,7 +4,7 @@
 
 Usage:
   grabpod.py
-  grabpod.py [--dir=<dir>] [<podcast_name> <podcast_name>...]
+  grabpod.py [--dry-run] [--dir=<dir>] [<podcast_name> <podcast_name>...]
   grabpod.py -h | --help
   grabpod.py --version
 
@@ -13,6 +13,9 @@ Options:
   --version                         Show version.
   -d, --dir=<dir>                   Download files to subdirectories of <dir>
   <podcast_name>...                 Only download these podcasts
+  -x, --dry-run                     Download podcast lists and create
+                                    appropriate directories, but don't download
+                                    any audio files.
 """
 
 from __future__ import print_function
@@ -89,11 +92,15 @@ def main(args):
         filename = urlparse.urlsplit(item.enclosure['url']).path.split('/')[-1]
         filename = os.path.join(podcast_dir, filename)
         if not os.path.exists(filename):
-          print("Attemtping to fetch\n  {}".format(item.title.get_text()).encode('ascii', 'replace'))
-          r =requests.get(item.enclosure['url'])
-          with open(filename, 'wb') as fd:
-            for chunk in r.iter_content(chunk_size=512):
-              fd.write(chunk)
+          asciized_item_title = item.title.get_text().encode('ascii', 'replace')
+          if args['--dry-run']:
+            print("Would fetch\n  {}".format(asciized_item_title))
+          else:
+            print("Attempting to fetch\n  {}".format(asciized_item_title))
+            r =requests.get(item.enclosure['url'])
+            with open(filename, 'wb') as fd:
+              for chunk in r.iter_content(chunk_size=512):
+                fd.write(chunk)
         else:
           print("    {}\n    already exists, skipping.".format(filename))
     except Exception, e:
