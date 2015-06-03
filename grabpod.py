@@ -4,7 +4,7 @@
 
 Usage:
   grabpod.py
-  grabpod.py [--dry-run] [--dir=<dir>] [<podcast_name> <podcast_name>...]
+  grabpod.py [options] [<podcast_name> <podcast_name>...]
   grabpod.py -h | --help
   grabpod.py --version
   grabpod.py --list
@@ -14,6 +14,8 @@ Options:
   --version                         Show version.
   -d, --dir=<dir>                   Download files to subdirectories of <dir>
   <podcast_name>...                 Only download these podcasts
+  -n, --number-to-download=<num>    Ignore config file and download this many
+                                    files from each podcast.
   -x, --dry-run                     Download podcast lists and create
                                     appropriate directories, but don't download
                                     any audio files.
@@ -91,10 +93,16 @@ def main(args):
       print("Looking for links in {}".format(xml_filename))
       with open(xml_filename) as xml_file:
         parsed_xml = BeautifulSoup(xml_file, 'xml')
-      if "num downloads" in podcast:
+
+      # If there's some guidance on how many to download, obey it
+      if args['--number-to-download'] and (int(args['--number-to-download']) > 0):
+        print("  Getting top {} items".format(int(args['--number-to-download'])))
+        items = parsed_xml.channel.find_all('item')[0: int(args['--number-to-download'])]
+      elif "num downloads" in podcast:
         print("  Getting top {} items".format(podcast['num downloads']))
         items = parsed_xml.channel.find_all('item')[0: podcast['num downloads']]
       else:
+        print("  Getting all items".format(podcast['num downloads']))
         items = parsed_xml.channel.find_all('item')
       for item in items:
         filename = urlparse.urlsplit(item.enclosure['url']).path.split('/')[-1]
