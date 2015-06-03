@@ -2,6 +2,8 @@
 
 """grabpod.py
 
+CLI podcast fetcher.
+
 Usage:
   grabpod.py
   grabpod.py [options] [<podcast_name> <podcast_name>...]
