@@ -4,7 +4,7 @@
 
 Usage:
   grabpod.py
-  grabpod.py [--dir=<dir>] [--podcasts <podcast_name>...]
+  grabpod.py [--dir=<dir>] [<podcast_name> <podcast_name>...]
   grabpod.py -h | --help
   grabpod.py --version
 
@@ -12,7 +12,7 @@ Options:
   -h, --help                        Show this screen.
   --version                         Show version.
   -d, --dir=<dir>                   Download files to subdirectories of <dir>
-  -p, --podcasts <podcast_name>...  Only download these podcasts
+  <podcast_name>...                 Only download these podcasts
 """
 
 from __future__ import print_function
@@ -60,8 +60,8 @@ def main(args):
   # CLI options override config file options
   if args['--dir'] is not None:
     podcasts_dir = args['--dir']
-  if args['--podcasts'] != []:
-    podcasts = [podcast for podcast in podcasts if podcast['alias'] in args['--podcasts']]
+  if args['<podcast_name>'] != []:
+    podcasts = [podcast for podcast in podcasts if podcast['alias'] in args['<podcast_name>']]
 
   for podcast in podcasts:
     podcast_dir = os.path.join(podcasts_dir, podcast['alias'])
