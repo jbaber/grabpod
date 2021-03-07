@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """grabpod.py
 
@@ -31,7 +31,6 @@ import os
 import sys
 import re
 from bs4 import BeautifulSoup
-import urlparse
 import requests
 # Not using urlgrabber because it doesn't handle 302's well
 from docopt import docopt
@@ -148,7 +147,7 @@ def main(args):
         print("  Getting all items".format(podcast['num downloads']))
         items = parsed_xml.channel.find_all('item')
       for item in items:
-        filename = urlparse.urlsplit(item.enclosure['url']).path.split('/')[-1]
+        filename = item.enclosure['url'].split('/')[-1]
         filename = os.path.join(podcast_dir, filename)
         if not os.path.exists(filename):
           asciized_item_title = item.title.get_text().encode('ascii', 'replace')
@@ -162,7 +161,7 @@ def main(args):
                 fd.write(chunk)
         else:
           print("    {}\n    already exists, skipping.".format(filename))
-    except Exception, e:
+    except Exception as e:
       print("Exception happened")
 
 if __name__ == "__main__":

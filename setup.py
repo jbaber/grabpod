@@ -9,7 +9,7 @@ setup(
   license = "GPLv3",
   url = "https://github.com/jbaber/grabpod",
   packages = ['grabpod'],
-  install_requires = ['docopt', 'beautifulsoup4', 'lxml', ],
+  install_requires = ['docopt', 'beautifulsoup4', 'lxml', 'requests', ],
   entry_points = {
     'console_scripts': ['grabpod=grabpod.grabpod:main'],
   }
