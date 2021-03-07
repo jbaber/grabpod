@@ -2,5 +2,4 @@ grabpod.py is an elementary CLI podcast fetcher.
 
 example_grabpodrc.yaml should be a sufficient example to start downloading.
 
-Python prerequisites to get from pip:
-  docopt
+Python prerequisites to get from pip listed in REQUIRES
