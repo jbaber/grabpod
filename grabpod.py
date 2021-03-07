@@ -26,8 +26,7 @@ Options:
 
 from __future__ import print_function
 
-import yaml
-import pycurl
+import json
 import os
 import sys
 import re
@@ -42,7 +41,7 @@ def main(args):
     print(version)
     exit(0)
   config_dir = os.path.join(os.path.expanduser("~"), ".config")
-  config_filename = os.path.join(config_dir, "grabpodrc.yaml")
+  config_filename = os.path.join(config_dir, "grabpodrc.json")
   cur_dir = os.getcwd()
 
   if not os.path.exists(config_filename):
@@ -50,19 +49,61 @@ def main(args):
     if not os.path.exists(config_dir):
       os.makedirs(config_dir)
     with open(config_filename, 'w') as config_file:
-      config_file.write("""podcasts directory: {}
-
-  podcasts:
-    - alias: day6
-      url: http://www.cbc.ca/podcasting/includes/day6.xml
-      num downloads: 2
-    - alias: hdtgm
-      url: http://rss.earwolf.com/how-did-this-get-made
-      num downloads: 2""".format(cur_dir))
+      example_dict = {"podcasts directory": "/tmp/boo",
+"podcasts": [
+{"alias": "spokenwiki",
+"url": "http://feeds.feedburner.com/SpokenWiki",
+"num downloads": "3"
+},
+{"alias": "adler",
+"url": "http://www.npr.org/templates/rss/podlayer.php?id=2100166",
+"num downloads": "3"
+},
+{"alias": "baltimore_stories",
+"url": "http://www.publicbroadcasting.net/wypr/.jukebox?action=viewPodcast&podcastId=16423",
+"num downloads": "4"
+},
+{"alias": "day6",
+"url": "http://www.cbc.ca/podcasting/includes/day6.xml",
+"num downloads": "2"
+},
+{"alias": "hdtgm",
+"url": "http://rss.earwolf.com/how-did-this-get-made",
+"num downloads": "2"
+},
+{"alias": "maher",
+"url": "http://www.hbo.com/podcasts/billmaher/podcast.xml",
+"num downloads": "3"
+},
+{"alias": "otm",
+"url": "http://www.onthemedia.org/index.xml",
+"num downloads": "2"
+},
+{"alias": "totenberg",
+"url": "http://www.npr.org/templates/rss/podlayer.php?id=2101289"
+},
+{"alias": "waitwait",
+"url": "http://www.npr.org/rss/podcast.php?id=35"
+},
+{"alias": "wiretap",
+"url": "http://www.cbc.ca/podcasting/includes/wiretap.xml",
+"num downloads": "4"
+},
+{"alias": "mefi",
+"url": "http://feeds.feedburner.com/MeFiPodcast?format=xml",
+"num downloads": "2"
+},
+{"alias": "revolutions",
+"url": "http://revolutionspodcast.libsyn.com/rss/",
+"num downloads": "3"
+}
+]
+}
+      json.dump(example_dict, config_file)
 
   # Read options from config file
   with open(config_filename) as config_file:
-    config = yaml.load(config_file)
+    config = json.load(config_file)
     podcasts_dir = config['podcasts directory']
     podcasts = config['podcasts']
 
