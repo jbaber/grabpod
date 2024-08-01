@@ -41,16 +41,11 @@ DEFAULT_CONFIG_DIR = os.path.join(os.path.expanduser("~"), ".config")
 DEFAULT_CONFIG_FILENAME = "grabpodrc.json"
 
 
-def main(args):
-  config_dir = DEFAULT_CONFIG_DIR
-  config_filename = os.path.join(config_dir, DEFAULT_CONFIG_FILENAME)
-  cur_dir = os.getcwd()
-
-  if not os.path.exists(config_filename):
-    print("{} doesn't exist so creating and populating with an example".format(config_filename))
+def create_default_config(config_dir, config_filename):
     if not os.path.exists(config_dir):
       os.makedirs(config_dir)
-    with open(config_filename, 'w') as config_file:
+    config_path = os.path.join(config_dir, config_filename)
+    with open(config_path, 'w') as config_file:
       example_dict = {"podcasts directory": "/tmp/boo",
 "podcasts": [
 {"alias": "spokenwiki",
@@ -101,10 +96,20 @@ def main(args):
 }
 ]
 }
-      json.dump(example_dict, config_file)
+    json.dump(example_dict, config_file)
+
+
+def main(args):
+  config_dir = DEFAULT_CONFIG_DIR
+  config_path = os.path.join(config_dir, DEFAULT_CONFIG_FILENAME)
+  cur_dir = os.getcwd()
+
+  if not os.path.exists(config_path):
+    print(f"{config_path} doesn't exist so creating and populating with an example")
+    create_default_config(config_dir, config_path)
 
   # Read options from config file
-  with open(config_filename) as config_file:
+  with open(config_path) as config_file:
     config = json.load(config_file)
     podcasts_dir = config['podcasts directory']
     podcasts = config['podcasts']
