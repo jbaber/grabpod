@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""grabpod.py
+__doc__ = """grabpod.py
 
 CLI podcast fetcher.
 
@@ -24,6 +24,7 @@ Options:
   -l, --list                        List podcast names from config file.
 """
 
+
 import json
 import os
 import sys
@@ -34,10 +35,12 @@ import requests
 # Not using urlgrabber because it doesn't handle 302's well
 from docopt import docopt
 
+
+VERSION="0.1.0"
+DEFAULT_CONFIG_DIR = os.path.join(os.path.expanduser("~"), ".config")
+
+
 def main(args):
-  if args['--version']:
-    print(version)
-    exit(0)
   config_dir = os.path.join(os.path.expanduser("~"), ".config")
   config_filename = os.path.join(config_dir, "grabpodrc.json")
   cur_dir = os.getcwd()
@@ -164,4 +167,5 @@ def main(args):
       print("Exception happened")
 
 if __name__ == "__main__":
-  main(docopt(__doc__))
+  args = docopt(__doc__, version=VERSION)
+  main(args)
