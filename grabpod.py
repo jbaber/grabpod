@@ -164,7 +164,7 @@ def main(args):
         else:
           print("    {}\n    already exists, skipping.".format(filename))
     except Exception as e:
-      print("Exception happened")
+      print(f"Exception happened: {e}")
 
 if __name__ == "__main__":
   args = docopt(__doc__, version=VERSION)
