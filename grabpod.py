@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """grabpod.py
 
@@ -24,14 +24,12 @@ Options:
   -l, --list                        List podcast names from config file.
 """
 
-from __future__ import print_function
-
 import json
 import os
 import sys
 import re
 from bs4 import BeautifulSoup
-import urlparse
+from urllib.parse import urlparse
 import requests
 # Not using urlgrabber because it doesn't handle 302's well
 from docopt import docopt
@@ -162,7 +160,7 @@ def main(args):
                 fd.write(chunk)
         else:
           print("    {}\n    already exists, skipping.".format(filename))
-    except Exception, e:
+    except Exception as e:
       print("Exception happened")
 
 if __name__ == "__main__":
