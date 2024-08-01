@@ -116,8 +116,8 @@ def main(args):
 
   # If --list flag given, only list the available aliases and quit
   if args['--list']:
-    for alias in (podcast['alias'] for podcast in podcasts):
-      print(alias)
+    for podcast in podcasts:
+        print(podcast['alias'])
     exit(0)
 
   # CLI options override config file options
