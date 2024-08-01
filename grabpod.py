@@ -38,11 +38,12 @@ from docopt import docopt
 
 VERSION="0.1.0"
 DEFAULT_CONFIG_DIR = os.path.join(os.path.expanduser("~"), ".config")
+DEFAULT_CONFIG_FILENAME = "grabpodrc.json"
 
 
 def main(args):
-  config_dir = os.path.join(os.path.expanduser("~"), ".config")
-  config_filename = os.path.join(config_dir, "grabpodrc.json")
+  config_dir = DEFAULT_CONFIG_DIR
+  config_filename = os.path.join(config_dir, DEFAULT_CONFIG_FILENAME)
   cur_dir = os.getcwd()
 
   if not os.path.exists(config_filename):
