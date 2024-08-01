@@ -99,41 +99,14 @@ def create_default_config(config_dir, config_filename):
     json.dump(example_dict, config_file)
 
 
-def main(args):
-  config_dir = DEFAULT_CONFIG_DIR
-  config_path = os.path.join(config_dir, DEFAULT_CONFIG_FILENAME)
-  cur_dir = os.getcwd()
-
-  if not os.path.exists(config_path):
-    print(f"{config_path} doesn't exist so creating and populating with an example")
-    create_default_config(config_dir, config_path)
-
-  # Read options from config file
-  with open(config_path) as config_file:
-    config = json.load(config_file)
-    podcasts_dir = config['podcasts directory']
-    podcasts = config['podcasts']
-
-  # If --list flag given, only list the available aliases and quit
-  if args['--list']:
-    for podcast in podcasts:
-        print(podcast['alias'])
-    exit(0)
-
-  # CLI options override config file options
-  if args['--dir'] is not None:
-    podcasts_dir = args['--dir']
-  if args['<podcast_name>'] != []:
-    podcasts = [podcast for podcast in podcasts if podcast['alias'] in args['<podcast_name>']]
-
-  for podcast in podcasts:
+def fetch_podcast(*, podcast, podcasts_dir):
     podcast_dir = os.path.join(podcasts_dir, podcast['alias'])
     xml_filename = os.path.join(podcast_dir, 'podcast.xml')
 
     if not os.path.isdir(podcast_dir):
       print("Creating {}".format(podcast_dir))
       os.makedirs(podcast_dir)
-    print("Attempting to fetch {0}'s podcast list to {1}".format(podcast['alias'], xml_filename))
+    print(f"Attempting to fetch {podcast['alias']}'s podcast list to {xml_filename}")
     try:
       r =requests.get(podcast['url'])
       with open(xml_filename, 'wb') as fd:
@@ -171,6 +144,37 @@ def main(args):
           print("    {}\n    already exists, skipping.".format(filename))
     except Exception as e:
       print(f"Exception happened: {e}")
+
+
+def main(args):
+  config_dir = DEFAULT_CONFIG_DIR
+  config_path = os.path.join(config_dir, DEFAULT_CONFIG_FILENAME)
+  cur_dir = os.getcwd()
+
+  if not os.path.exists(config_path):
+    print(f"{config_path} doesn't exist so creating and populating with an example")
+    create_default_config(config_dir, config_path)
+
+  # Read options from config file
+  with open(config_path) as config_file:
+    config = json.load(config_file)
+    podcasts_dir = config['podcasts directory']
+    podcasts = config['podcasts']
+
+  # If --list flag given, only list the available aliases and quit
+  if args['--list']:
+    for podcast in podcasts:
+        print(podcast['alias'])
+    exit(0)
+
+  # CLI options override config file options
+  if args['--dir'] is not None:
+    podcasts_dir = args['--dir']
+  if args['<podcast_name>'] != []:
+    podcasts = [podcast for podcast in podcasts if podcast['alias'] in args['<podcast_name>']]
+
+  for podcast in podcasts:
+    fetch_podcast(podcast=podcast, podcasts_dir=podcasts_dir)
 
 if __name__ == "__main__":
   args = docopt(__doc__, version=VERSION)
