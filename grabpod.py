@@ -39,7 +39,59 @@ from docopt import docopt
 VERSION="0.1.0"
 DEFAULT_CONFIG_DIR = os.path.join(os.path.expanduser("~"), ".config")
 DEFAULT_CONFIG_FILENAME = "grabpodrc.json"
-
+EXAMPLE_CONFIG = {
+   "podcasts" : [
+      {
+         "alias" : "spokenwiki",
+         "num downloads" : "3",
+         "url" : "http://feeds.feedburner.com/SpokenWiki"
+      },
+      {
+         "alias" : "day6",
+         "num downloads" : "2",
+         "url" : "http://www.cbc.ca/podcasting/includes/day6.xml"
+      },
+      {
+         "alias" : "hdtgm",
+         "num downloads" : "2",
+         "url" : "https://feeds.simplecast.com/Ao0C24M8"
+      },
+      {
+         "alias" : "maher",
+         "num downloads" : "3",
+         "url" : "http://www.hbo.com/podcasts/billmaher/podcast.xml"
+      },
+      {
+         "alias" : "otm",
+         "num downloads" : "2",
+         "url" : "http://www.onthemedia.org/index.xml"
+      },
+      {
+         "alias" : "totenberg",
+         "url" : "http://www.npr.org/templates/rss/podlayer.php?id=2101289"
+      },
+      {
+         "alias" : "waitwait",
+         "url" : "http://www.npr.org/rss/podcast.php?id=35"
+      },
+      {
+         "alias" : "wiretap",
+         "num downloads" : "4",
+         "url" : "http://www.cbc.ca/podcasting/includes/wiretap.xml"
+      },
+      {
+         "alias" : "mefi",
+         "num downloads" : "2",
+         "url" : "http://feeds.feedburner.com/MeFiPodcast?format=xml"
+      },
+      {
+         "alias" : "revolutions",
+         "num downloads" : "3",
+         "url" : "http://revolutionspodcast.libsyn.com/rss/"
+      }
+   ],
+   "podcasts directory" : "/tmp/boo"
+}
 
 class UnparseableError(Exception):
     pass
@@ -50,57 +102,7 @@ def create_default_config(config_dir, config_filename):
       os.makedirs(config_dir)
     config_path = os.path.join(config_dir, config_filename)
     with open(config_path, 'w') as config_file:
-      example_dict = {"podcasts directory": "/tmp/boo",
-"podcasts": [
-{"alias": "spokenwiki",
-"url": "http://feeds.feedburner.com/SpokenWiki",
-"num downloads": "3"
-},
-{"alias": "adler",
-"url": "http://www.npr.org/templates/rss/podlayer.php?id=2100166",
-"num downloads": "3"
-},
-{"alias": "baltimore_stories",
-"url": "http://www.publicbroadcasting.net/wypr/.jukebox?action=viewPodcast&podcastId=16423",
-"num downloads": "4"
-},
-{"alias": "day6",
-"url": "http://www.cbc.ca/podcasting/includes/day6.xml",
-"num downloads": "2"
-},
-{"alias": "hdtgm",
-"url": "http://rss.earwolf.com/how-did-this-get-made",
-"num downloads": "2"
-},
-{"alias": "maher",
-"url": "http://www.hbo.com/podcasts/billmaher/podcast.xml",
-"num downloads": "3"
-},
-{"alias": "otm",
-"url": "http://www.onthemedia.org/index.xml",
-"num downloads": "2"
-},
-{"alias": "totenberg",
-"url": "http://www.npr.org/templates/rss/podlayer.php?id=2101289"
-},
-{"alias": "waitwait",
-"url": "http://www.npr.org/rss/podcast.php?id=35"
-},
-{"alias": "wiretap",
-"url": "http://www.cbc.ca/podcasting/includes/wiretap.xml",
-"num downloads": "4"
-},
-{"alias": "mefi",
-"url": "http://feeds.feedburner.com/MeFiPodcast?format=xml",
-"num downloads": "2"
-},
-{"alias": "revolutions",
-"url": "http://revolutionspodcast.libsyn.com/rss/",
-"num downloads": "3"
-}
-]
-}
-    json.dump(example_dict, config_file)
+        json.dump(EXAMPLE_CONFIG, config_file)
 
 
 def fetch_podcast_xml(*, podcast, podcasts_dir):
