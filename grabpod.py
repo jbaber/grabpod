@@ -169,13 +169,14 @@ def fetch_podcast(*, podcast, podcasts_dir):
     print(f"Looking for links in {xml_filename}")
     num_to_download = -1
     if args['--number-to-download']:
-        try:
-            num_to_download = int(args['--number-to-download'])
-        except ValueError as e:
-            print("--number-to-download must be an integer")
-            exit(2)
+        num_to_download = args["--number-to-download"]
     elif "num downloads" in podcast:
-        num_to_download = int(podcast['num downloads'])
+        num_to_download = podcast['num downloads']
+    try:
+        num_to_download = int(num_to_download)
+    except ValueError as e:
+        print("Number to download must be an integer")
+        exit(2)
 
     try:
         items = podcast_items_from_xml_file(
