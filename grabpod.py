@@ -41,6 +41,10 @@ DEFAULT_CONFIG_DIR = os.path.join(os.path.expanduser("~"), ".config")
 DEFAULT_CONFIG_FILENAME = "grabpodrc.json"
 
 
+class UnparseableError(Exception):
+    pass
+
+
 def create_default_config(config_dir, config_filename):
     if not os.path.exists(config_dir):
       os.makedirs(config_dir)
@@ -99,51 +103,93 @@ def create_default_config(config_dir, config_filename):
     json.dump(example_dict, config_file)
 
 
-def fetch_podcast(*, podcast, podcasts_dir):
+def fetch_podcast_xml(*, podcast, podcasts_dir):
     podcast_dir = os.path.join(podcasts_dir, podcast['alias'])
     xml_filename = os.path.join(podcast_dir, 'podcast.xml')
 
     if not os.path.isdir(podcast_dir):
-      print("Creating {}".format(podcast_dir))
+      print(f"Creating {podcast_dir}")
       os.makedirs(podcast_dir)
+
     print(f"Attempting to fetch {podcast['alias']}'s podcast list to {xml_filename}")
     try:
-      r =requests.get(podcast['url'])
+      r = requests.get(podcast['url'])
       with open(xml_filename, 'wb') as fd:
         for chunk in r.iter_content(chunk_size=1):
           fd.write(chunk)
-      # At this point download was successful
-      print("Looking for links in {}".format(xml_filename))
-      with open(xml_filename) as xml_file:
-        parsed_xml = BeautifulSoup(xml_file, 'xml')
-
-      # If there's some guidance on how many to download, obey it
-      if args['--number-to-download'] and (int(args['--number-to-download']) > 0):
-        print("  Getting top {} items".format(int(args['--number-to-download'])))
-        items = parsed_xml.channel.find_all('item')[0: int(args['--number-to-download'])]
-      elif "num downloads" in podcast:
-        print("  Getting top {} items".format(podcast['num downloads']))
-        items = parsed_xml.channel.find_all('item')[0: podcast['num downloads']]
-      else:
-        print("  Getting all items".format(podcast['num downloads']))
-        items = parsed_xml.channel.find_all('item')
-      for item in items:
-        filename = urlparse.urlsplit(item.enclosure['url']).path.split('/')[-1]
-        filename = os.path.join(podcast_dir, filename)
-        if not os.path.exists(filename):
-          asciized_item_title = item.title.get_text().encode('ascii', 'replace')
-          if args['--dry-run']:
-            print("Would fetch\n  {}".format(asciized_item_title))
-          else:
-            print("Attempting to fetch\n  {}".format(asciized_item_title))
-            r =requests.get(item.enclosure['url'])
-            with open(filename, 'wb') as fd:
-              for chunk in r.iter_content(chunk_size=512):
-                fd.write(chunk)
-        else:
-          print("    {}\n    already exists, skipping.".format(filename))
     except Exception as e:
-      print(f"Exception happened: {e}")
+        print(e)
+        exit(1)
+
+    return xml_filename
+
+
+def podcast_items_from_xml_file(*, xml_filename, num_to_download=-1):
+    with open(xml_filename) as f:
+        parsed_xml = BeautifulSoup(f, 'xml')
+    try:
+        all_items = parsed_xml.channel.find_all('item')
+    except AttributeError as e:
+        raise UnparseableError(f"Couldn't parse {xml_filename}")
+
+    if all_items == None:
+        raise UnparseableError(f"Couldn't parse any items from {xml_filename}")
+
+    if num_to_download == -1:
+        print("  Getting all items")
+        return all_items
+    else:
+        print(f"  Getting top {num_to_download} items")
+        try:
+            return all_items[0: num_to_download]
+        except Exception as e:
+            print(e)
+            exit(9)
+
+
+def fetch_item(*, item, filepath, dry_run=True):
+    if not os.path.exists(filepath):
+        asciized_item_title = item.title.get_text().encode('ascii', 'replace')
+        if dry_run:
+            print(f"Would fetch\n  {asciized_item_title}")
+            return
+        else:
+            print(f"Attempting to fetch\n  {asciized_item_title}")
+        r = requests.get(item.enclosure['url'])
+        with open(filepath, 'wb') as fd:
+            for chunk in r.iter_content(chunk_size=512):
+                fd.write(chunk)
+    else:
+        print(f"    {filename}\n    already exists, skipping.")
+
+
+def fetch_podcast(*, podcast, podcasts_dir):
+    xml_filename = fetch_podcast_xml(podcast=podcast, podcasts_dir=podcasts_dir)
+
+    print(f"Looking for links in {xml_filename}")
+    num_to_download = -1
+    if args['--number-to-download']:
+        try:
+            num_to_download = int(args['--number-to-download'])
+        except ValueError as e:
+            print("--number-to-download must be an integer")
+            exit(2)
+    elif "num downloads" in podcast:
+        num_to_download = int(podcast['num downloads'])
+
+    try:
+        items = podcast_items_from_xml_file(
+            xml_filename=xml_filename,
+            num_to_download=num_to_download
+        )
+    except UnparseableError as e:
+        print(f"Couldn't parse {xml_filename}")
+        items = []
+
+    for item in items:
+        filepath = urlparse.urlsplit(item.enclosure['url']).path.split('/')[-1]
+        filepath = os.path.join(podcast_dir, filepath)
+        fetch_item(item=item, filepath=filepath, dry_run=args["--dry-run"])
 
 
 def main(args):
