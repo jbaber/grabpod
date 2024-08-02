@@ -30,7 +30,7 @@ import os
 import sys
 import re
 from bs4 import BeautifulSoup
-from urllib.parse import urlparse
+import urllib
 import requests
 # Not using urlgrabber because it doesn't handle 302's well
 from docopt import docopt
@@ -104,7 +104,7 @@ def create_default_config(config_dir, config_filename):
 
 
 def fetch_podcast_xml(*, podcast, podcasts_dir):
-    podcast_dir = os.path.join(podcasts_dir, podcast['alias'])
+    podcast_dir = podcast_dirname(podcasts_dir=podcasts_dir, podcast=podcast)
     xml_filename = os.path.join(podcast_dir, 'podcast.xml')
 
     if not os.path.isdir(podcast_dir):
@@ -112,14 +112,10 @@ def fetch_podcast_xml(*, podcast, podcasts_dir):
       os.makedirs(podcast_dir)
 
     print(f"Attempting to fetch {podcast['alias']}'s podcast list to {xml_filename}")
-    try:
-      r = requests.get(podcast['url'])
-      with open(xml_filename, 'wb') as fd:
+    r = requests.get(podcast['url'])
+    with open(xml_filename, 'wb') as fd:
         for chunk in r.iter_content(chunk_size=1):
-          fd.write(chunk)
-    except Exception as e:
-        print(e)
-        exit(1)
+            fd.write(chunk)
 
     return xml_filename
 
@@ -149,7 +145,8 @@ def podcast_items_from_xml_file(*, xml_filename, num_to_download=-1):
 
 def fetch_item(*, item, filepath, dry_run=True):
     if not os.path.exists(filepath):
-        asciized_item_title = item.title.get_text().encode('ascii', 'replace')
+        asciized_item_title = \
+            item.title.get_text().encode('ascii', 'replace').decode("utf-8")
         if dry_run:
             print(f"Would fetch\n  {asciized_item_title}")
             return
@@ -160,11 +157,19 @@ def fetch_item(*, item, filepath, dry_run=True):
             for chunk in r.iter_content(chunk_size=512):
                 fd.write(chunk)
     else:
-        print(f"    {filename}\n    already exists, skipping.")
+        print(f"    {filepath}\n      already exists, skipping.")
+
+
+def podcast_dirname(*, podcasts_dir, podcast):
+    return os.path.join(podcasts_dir, podcast['alias'])
 
 
 def fetch_podcast(*, podcast, podcasts_dir):
-    xml_filename = fetch_podcast_xml(podcast=podcast, podcasts_dir=podcasts_dir)
+    try:
+        xml_filename = fetch_podcast_xml(podcast=podcast, podcasts_dir=podcasts_dir)
+    except requests.exceptions.ConnectionError as e:
+        print(f"Couldn't fetch {podcast['alias']}")
+        return
 
     print(f"Looking for links in {xml_filename}")
     num_to_download = -1
@@ -188,8 +193,11 @@ def fetch_podcast(*, podcast, podcasts_dir):
         items = []
 
     for item in items:
-        filepath = urlparse.urlsplit(item.enclosure['url']).path.split('/')[-1]
-        filepath = os.path.join(podcast_dir, filepath)
+        filepath = urllib.parse.urlsplit(item.enclosure['url']).path.split('/')[-1]
+        filepath = os.path.join(
+            podcast_dirname(podcasts_dir=podcasts_dir, podcast=podcast),
+            filepath
+        )
         fetch_item(item=item, filepath=filepath, dry_run=args["--dry-run"])
 
 
